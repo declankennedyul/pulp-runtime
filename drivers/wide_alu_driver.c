@@ -1,6 +1,14 @@
 #include <wide_alu_driver.h>
+#include <wide_alu_auto.h> // inserted
 #include <stdint.h>
 #include <stdio.h>
+
+void set_op(uint8_t operation)
+{
+  uint32_t volatile *ctrl2_reg = (uint32_t *)WIDE_ALU_CTRL2(0);
+  uint32_t ctrl2_old_value = *ctrl2_reg;
+  *ctrl2_reg = ctrl2_old_value | (operation & WIDE_ALU_CTRL2_OPSEL_MASK) << WIDE_ALU_CTRL2_OPSEL_ADD;
+}
 
 void set_delay(uint8_t delay)
 {
@@ -23,6 +31,13 @@ void set_operands(uint32_t* a, uint32_t* b)
     op_a_reg_start[i] = a[i];
     op_b_reg_start[i] = b[i];
   }
+}
+
+void trigger_op(void) {
+  uint32_t volatile *ctrl1_reg = (uint32_t *)WIDE_ALU_CTRL1(0);
+  asm volatile ("": : : "memory");
+  *ctrl1_reg = (1 & WIDE_ALU_CTRL1_TRIGGER_MASK) << WIDE_ALU_CTRL1_TRIGGER_LSB;
+  asm volatile ("": : : "memory");
 }
 
 int poll_done(void)
@@ -52,4 +67,29 @@ void clear_error(void)
   uint32_t volatile * ctrl1_reg = (uint32_t*)WIDE_ALU_CTRL1(0);
   //Trigger operation by writing to trigger bit
   *ctrl1_reg = (1 & WIDE_ALU_CTRL1_CLEAR_ERR_MASK)<<WIDE_ALU_CTRL1_CLEAR_ERR_LSB;
+}
+
+int wide_multiply(uint32_t a[32], uint32_t b[32], uint32_t result[64]) {
+
+  int status = poll_done();
+  if (status != 0) {
+    printf("error: setting up multiplication\n");
+    printf("error: %d", status);
+    return status;
+  }
+  set_operands(a, b);
+  set_op(WIDE_ALU_CTRL2_OPSEL_MUL);
+
+  trigger_op();
+  status = poll_done();
+
+  if (status != 0) {
+    printf("operation failed\n");
+    return status;
+  }
+  else
+  {
+    get_result(result);
+    return 0;
+  }
 }

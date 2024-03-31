@@ -27,6 +27,8 @@
 #include <archi/pulp.h>
 #include <hal/pulp.h>
 #include <data/data.h>
+#include <wide_alu_auto.h>
+#include <wide_alu_driver.h>
 
 typedef enum {
   PI_FREQ_DOMAIN_FC     = 0,

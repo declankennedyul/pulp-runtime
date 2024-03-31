@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdint.h>
+#include <hal/pulp.h>
 
 void set_op(uint8_t operation);
 void set_delay(uint8_t delay);

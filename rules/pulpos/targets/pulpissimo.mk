@@ -38,6 +38,10 @@ PULP_SRCS     += kernel/fll-v$(fll/version).c
 PULP_SRCS     += kernel/freq-domains.c
 PULP_SRCS     += kernel/chips/pulpissimo/soc.c
 
+# my new axi driver
+PULP_SRCS     += drivers/wide_alu_driver.c
+
+
 
 include $(PULPRT_HOME)/rules/pulpos/configs/default.mk
 
